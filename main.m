@@ -6,8 +6,14 @@ if ~exist('full_raw_data', 'var')
     full_raw_data = load('data/mC41_33/sh1_30.mat'); full_raw_data = full_raw_data.sh1_30;
     full_true_spike_times = load('data/mC41_33/res1_30.mat'); full_true_spike_times = full_true_spike_times.res1_30;
     full_true_clusters = load('data/mC41_33/clu1_30.mat'); full_true_clusters = full_true_clusters.clu1_30;
+    full_true_clusters(1) = [];
+    full_true_spike_times(end) = [];
+    bad_clusters = (full_true_clusters == 0 | full_true_clusters == 1);
+    full_true_clusters(bad_clusters) = [];
+    full_true_spike_times(bad_clusters) = [];
 end
-last_data_ind = round(size(full_raw_data,2)/10);
+
+last_data_ind = round(size(full_raw_data,2)/2);
 raw_data = full_raw_data(:,1:last_data_ind);
 true_spike_times = full_true_spike_times(full_true_spike_times < last_data_ind);
 true_clusters = full_true_clusters(1:length(true_spike_times));
