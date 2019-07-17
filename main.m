@@ -7,42 +7,32 @@ if ~exist('full_raw_data', 'var')
     full_true_spike_times = load('data/mC41_33/res1_30.mat'); full_true_spike_times = full_true_spike_times.res1_30;
     full_true_clusters = load('data/mC41_33/clu1_30.mat'); full_true_clusters = full_true_clusters.clu1_30;
 end
-last_data_ind = round(size(raw_data,2)/10);
+last_data_ind = round(size(full_raw_data,2)/10);
 raw_data = full_raw_data(:,1:last_data_ind);
 true_spike_times = full_true_spike_times(full_true_spike_times < last_data_ind);
 true_clusters = full_true_clusters(1:length(true_spike_times));
-
-preprocess = @(raw_data) bandpass(double(raw_data'), [250, 6000], 20000)';
-detection = @(clean_data) my_first_detector(clean_data,4.5,1.05,100);
-feature_extraction = @(clean_data,spike_times) spike_energy(clean_data,spike_times, 16);
-clustering = @(features) kmeans(squeeze(features)',15,'Distance', 'cityblock', 'Replicates',5, 'MaxIter',1000);
-
-S = SpikeSorter(preprocess, detection, feature_extraction, clustering);
-disp("Finished loading data"), toc
+S = SpikeSorter(raw_data, true_spike_times, true_clusters);
+disp(sprintf("Finished loading data. Elapsed %.1f sec.", toc))
 
 tic
-clean_data = S.pre_process(raw_data);
-disp("Finished cleaning data"), toc
+pre_process_handle = @(raw_data) bandpass(double(raw_data'), [250, 6000], 20000)';
+S.pre_process(pre_process_handle);
+disp(sprintf("Finished cleaning data. Elapsed %.1f sec.", toc))
 
 tic
-spike_times = S.detection(clean_data);
-disp("Finished detecting_spikes"), toc
+detection_margin = 10; %samples to each side
+detection_handle = @(clean_data) my_first_detector(clean_data,4,1.05,100);
+detection_rating = S.detect_and_rate(detection_handle, detection_margin);
+disp(sprintf("Detection rating is %.1f%%. Elapsed %.1f sec.", [detection_rating*100, toc]))
 
 tic
-margin = 10;
-detection_rating = S.test_detection(spike_times, true_spike_times, margin);
-disp(sprintf("Detection rating is %.1f%%", detection_rating*100)), toc
+feature_extraction_handle = @(clean_data,spike_times) spike_energy(clean_data,spike_times, 16);
+S.extract_features(feature_extraction_handle);
+disp(sprintf("Finished extracting features. Elapsed %.1f sec.", toc))
 
 tic
-features = S.feature_extraction(clean_data, spike_times);
-disp("Finished extracting features"), toc
+clustering_handle = @(features) kmeans(squeeze(features)',15,'Distance', 'cityblock', 'Replicates',5, 'MaxIter',1000);
+clustering_rating = S.cluster_and_rate(clustering_handle, detection_margin);
+disp(sprintf("Clustering rating is %.1f%%. Elapsed %.1f sec.", [clustering_rating*100, toc]))
 
-tic
-clusters = S.clustering(features);
-disp("Finished clustering"), toc
-
-tic
-clustering_rating = S.test_clustering(spike_times, clusters, true_spike_times, true_clusters, margin);
-disp(sprintf("Clustering rating is %.1f%%", clustering_rating*100)), toc
-
-disp(sprintf("Total time: %.2f seconds", toc(total_timer)))
+disp(sprintf("Total time: %.1f seconds", toc(total_timer)))
