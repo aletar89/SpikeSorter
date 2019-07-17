@@ -2,14 +2,15 @@ total_timer = tic;
 addpath('source')
 disp("Start")
 tic
-raw_data = load('data/mC41_33/sh1_30.mat'); raw_data = raw_data.sh1_30;
-true_spike_times = load('data/mC41_33/res1_30.mat'); true_spike_times = true_spike_times.res1_30;
-true_clusters = load('data/mC41_33/clu1_30.mat'); true_clusters = true_clusters.clu1_30;
-
+if ~exist('full_raw_data', 'var')
+    full_raw_data = load('data/mC41_33/sh1_30.mat'); full_raw_data = full_raw_data.sh1_30;
+    full_true_spike_times = load('data/mC41_33/res1_30.mat'); full_true_spike_times = full_true_spike_times.res1_30;
+    full_true_clusters = load('data/mC41_33/clu1_30.mat'); full_true_clusters = full_true_clusters.clu1_30;
+end
 last_data_ind = round(size(raw_data,2)/10);
-raw_data = raw_data(:,1:last_data_ind);
-true_spike_times = true_spike_times(true_spike_times < last_data_ind);
-true_clusters = true_clusters(1:length(true_spike_times));
+raw_data = full_raw_data(:,1:last_data_ind);
+true_spike_times = full_true_spike_times(full_true_spike_times < last_data_ind);
+true_clusters = full_true_clusters(1:length(true_spike_times));
 
 preprocess = @(raw_data) bandpass(double(raw_data'), [250, 6000], 20000)';
 detection = @(clean_data) my_first_detector(clean_data,4.5,1.05,100);
