@@ -1,5 +1,5 @@
 total_timer = tic;
-addpath('source')
+addpath(genpath('source'))
 disp("Start")
 tic
 if ~exist('full_raw_data', 'var')
@@ -27,7 +27,7 @@ disp(sprintf("Finished cleaning data. Elapsed %.1f sec.", toc))
 
 tic
 detection_margin = 10; %samples to each side
-detection_handle = @(clean_data) my_first_detector(clean_data,4,1.05,100);
+detection_handle = @(clean_data) modified_findpeaks(clean_data,4,1.05,100);
 detection_rating = S.detect_and_rate(detection_handle, detection_margin);
 disp(sprintf("Detection rating is %.1f%%. Elapsed %.1f sec.", [detection_rating*100, toc]))
 

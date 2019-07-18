@@ -1,4 +1,4 @@
-function spike_times = my_first_detector(data, rms_threshold, inter_site_threshold, edge)
+function spike_times = modified_findpeaks(data, rms_threshold, inter_site_threshold, edge)
     if nargin==1
         rms_threshold = 4;
         inter_site_threshold = 1.05;
