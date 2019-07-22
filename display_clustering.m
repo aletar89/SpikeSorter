@@ -1,4 +1,7 @@
 function display_clustering(data,spike_times, clusters, half_width)
+if nargin == 3
+    half_width = 16;
+end
 %% Prepare data
 on_edge = (spike_times - half_width < 1 ) | (spike_times + half_width > size(data,2));
 spike_times(on_edge) = [];
@@ -28,7 +31,7 @@ coef = pca(chained_spikes);
 pca_space = chained_spikes*coef;
 
 %% 3D PCA scatter
-figure(1)
+figure
 for i = 1:length(cluster_ids)
     c = cluster_ids(i);
     scatter3(pca_space(clusters==c,1), pca_space(clusters==c,2), pca_space(clusters==c,3),[],colors(i,:),'.')
@@ -37,7 +40,7 @@ end
 legend( num2str(unique(clusters)))
 
 %% Spike shapes
-figure(2); clf(2)
+figure
 for i = 1:length(cluster_ids)
     c = cluster_ids(i);
     alpha = min(15/sum(clusters==c),1);
