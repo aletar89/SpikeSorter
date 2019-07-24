@@ -1,6 +1,8 @@
 function F = F1(clustersA,clustersB)
 %F1 Summary of this function goes here
 %   Detailed explanation goes here
+clustersA = clustersA(:)';
+clustersB = clustersB(:)';
 N = length(clustersA); %should be the same for clustersB
 A_labels = unique(clustersA);
 PA = zeros(size(A_labels));

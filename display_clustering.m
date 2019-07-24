@@ -1,4 +1,4 @@
-function display_clustering(data,spike_times, clusters, half_width)
+function display_clustering(data,spike_times,features, clusters, half_width)
 if nargin == 3
     half_width = 16;
 end
@@ -6,6 +6,9 @@ end
 on_edge = (spike_times - half_width < 1 ) | (spike_times + half_width > size(data,2));
 spike_times(on_edge) = [];
 clusters(on_edge) = [];
+if ~isempty(features)
+    features(:,on_edge) = [];
+end
 spike_forms = zeros(size(data,1), 2*half_width + 1, length(spike_times));
 % % % commented out detrending, uncoment lines 7-15 to use detrended data
 %slope = repmat(linspace(0,1,33),size(data,1),1);
@@ -27,15 +30,30 @@ colors = [1,0,0;
           0,0.5,0.5];
 cluster_ids = unique(clusters);
 chained_spikes = reshape(permute(spike_forms,[2,1,3]),[size(spike_forms,1)*size(spike_forms,2), size(spike_forms,3)])';
-coef = pca(chained_spikes);
-pca_space = chained_spikes*coef;
+if isempty(features)
+    coef = pca(chained_spikes);
+    pca_space = chained_spikes*coef;
+else
+    coef = pca(features');
+    pca_space = features'*coef;
+end
 
 %% 3D PCA scatter
 figure
 for i = 1:length(cluster_ids)
     c = cluster_ids(i);
-    scatter3(pca_space(clusters==c,1), pca_space(clusters==c,2), pca_space(clusters==c,3),[],colors(i,:),'.')
-    hold all
+    subplot(2,2,1)
+    scatter(pca_space(clusters==c,1), pca_space(clusters==c,2),[],colors(i,:),'filled','markerfacealpha',0.1)
+    hold on
+    subplot(2,2,2)
+    scatter(pca_space(clusters==c,1), pca_space(clusters==c,3),[],colors(i,:),'filled','markerfacealpha',0.1)
+    hold on
+    subplot(2,2,3)
+    scatter(pca_space(clusters==c,1), pca_space(clusters==c,4),[],colors(i,:),'filled','markerfacealpha',0.1)
+    hold on
+    subplot(2,2,4)
+    scatter(pca_space(clusters==c,1), pca_space(clusters==c,5),[],colors(i,:),'filled','markerfacealpha',0.1)
+    hold on
 end
 legend( num2str(unique(clusters)))
 
@@ -43,7 +61,7 @@ legend( num2str(unique(clusters)))
 figure
 for i = 1:length(cluster_ids)
     c = cluster_ids(i);
-    alpha = min(15/sum(clusters==c),1);
+    alpha = max(min(15/sum(clusters==c),1),0.0025);
     ax1 = subplot(1,5,1:3);
     plot(chained_spikes(clusters==c,:)','color',[colors(i,:), alpha])
     hold on

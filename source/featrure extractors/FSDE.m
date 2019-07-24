@@ -7,12 +7,14 @@ if nargin == 2
 end
 features = zeros(size(clean_data,1)*3,length(spike_times));
 for i=1:length(spike_times)
-    local_FD = FD(:,spike_times(i)-half_width:spike_times(i)+half_width);
-    local_SD = SD(:,spike_times(i)-half_width:spike_times(i)+half_width);
-    FDmax = max(local_FD,[],2);
-    SDmax = max(local_SD,[],2);
-    SDmin = min(local_SD,[],2);
-    features(:,i) = [FDmax; SDmax; SDmin];
+    if (spike_times(i) - half_width >= 1 ) && (spike_times(i) + half_width <= size(clean_data,2))
+        local_FD = FD(:,spike_times(i)-half_width:spike_times(i)+half_width);
+        local_SD = SD(:,spike_times(i)-half_width:spike_times(i)+half_width);
+        FDmax = max(local_FD,[],2);
+        SDmax = max(local_SD,[],2);
+        SDmin = min(local_SD,[],2);
+        features(:,i) = [FDmax; SDmax; SDmin];
+    end
 end
 end
 
