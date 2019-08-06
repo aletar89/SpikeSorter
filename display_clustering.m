@@ -9,18 +9,6 @@ clusters(on_edge) = [];
 if ~isempty(features)
     features(:,on_edge) = [];
 end
-spike_forms = zeros(size(data,1), 2*half_width + 1, length(spike_times));
-% % % commented out detrending, uncoment lines 7-15 to use detrended data
-%slope = repmat(linspace(0,1,33),size(data,1),1);
-for i=1:length(spike_times)
-    %     first_val = mean(data(:,spike_times(i)-half_width:spike_times(i)-half_width+2),2);
-    %     first_val = repmat(first_val, 1, 2*half_width+1);
-    %     lsat_val = mean(data(:,spike_times(i)+half_width-2:spike_times(i)+half_width),2);
-    %     last_val = repmat(lsat_val, 1, 2*half_width+1);
-    %     detrend = first_val - slope.*last_val;
-    spike_forms(:,:,i) = data(:,spike_times(i)-half_width:spike_times(i)+half_width);
-    %     spike_forms(:,:,i) = spike_forms(:,:,i) - detrend;
-end
 
 colors = [1,0,0;
     0,1,0;
@@ -40,7 +28,12 @@ while length(cluster_ids)>6
     clusters(clusters==least_spikes) = [];
     cluster_ids = unique(clusters);
 end
-chained_spikes = reshape(permute(spike_forms,[2,1,3]),[size(spike_forms,1)*size(spike_forms,2), size(spike_forms,3)])';
+chained_spikes = zeros(length(spike_times), size(data,1)*(half_width*2+1));
+for i=1:length(spike_times)
+    all_channels = data(:,spike_times(i)-half_width:spike_times(i)+half_width)';
+    chained_spikes(i,:) = all_channels(:)';
+end
+
 if isempty(features)
     [coeff,score,~,~,~,mu] = pca(chained_spikes);
 else
