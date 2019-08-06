@@ -3,7 +3,7 @@ addpath(genpath('source'))
 disp("Start")
 tic
 if ~exist('D', 'var')
-    D = load('data/mC41_33_shank_1.mat');
+    D = load('data/mC41_33_shank_2.mat');
 end
 
 last_data_ind = round(size(D.clean_data,2)*0.8);
@@ -33,12 +33,14 @@ disp(sprintf("Detection rating is %.1f%% compared to all units.", detection_rati
 tic
 %feature_extraction_handle = @(clean_data,spike_times) spike_energy(clean_data,spike_times, 16);
 %feature_extraction_handle = @(clean_data,spike_times) FSDE(clean_data,spike_times, 16);
-feature_extraction_handle = @(clean_data,spike_times) libPCA(clean_data,spike_times,10, 16);
+%feature_extraction_handle = @(clean_data,spike_times) libPCA(clean_data,spike_times,10, 16);
+feature_extraction_handle = @(clean_data,spike_times) libPCA_pos(clean_data,spike_times,10, 16);
+%feature_extraction_handle = @(clean_data,spike_times) haar_features(clean_data,spike_times);
 S.extract_features(feature_extraction_handle);
 disp(sprintf("Finished extracting features. Elapsed %.1f sec.", toc))
 
 tic
-clustering_handle = @(features) kmeans(features',3, 'Replicates',5, 'MaxIter',1000);
+clustering_handle = @(features) kmeans(features',6, 'Replicates',5, 'MaxIter',1000);
 % merge_thresh = 80;
 % history = 10;
 % max_clusters = 30;
