@@ -42,11 +42,9 @@ while length(cluster_ids)>6
 end
 chained_spikes = reshape(permute(spike_forms,[2,1,3]),[size(spike_forms,1)*size(spike_forms,2), size(spike_forms,3)])';
 if isempty(features)
-    coef = pca(chained_spikes);
-    pca_space = chained_spikes*coef;
+    [coeff,score,~,~,~,mu] = pca(chained_spikes);
 else
-    coef = pca(features');
-    pca_space = features'*coef;
+    [coeff,score,~,~,~,mu] = pca(features');
 end
 
 %% PCA scatters
@@ -63,22 +61,22 @@ for i = 1:length(cluster_ids)
         points = points(selected);
     end
     subplot(2,2,1)
-    scatter(pca_space(points,1), pca_space(points,2),[],colors(i,:),'filled','markerfacealpha',0.1)
+    scatter(score(points,1), score(points,2),[],colors(i,:),'filled','markerfacealpha',0.1)
     xlabel('PC1');
     ylabel('PC2');
     hold on
     subplot(2,2,2)
-    scatter(pca_space(points,1), pca_space(points,3),[],colors(i,:),'filled','markerfacealpha',0.1)
+    scatter(score(points,1), score(points,3),[],colors(i,:),'filled','markerfacealpha',0.1)
     xlabel('PC1');
     ylabel('PC3');
     hold on
     subplot(2,2,3)
-    scatter(pca_space(points,1), pca_space(points,4),[],colors(i,:),'filled','markerfacealpha',0.1)
+    scatter(score(points,1), score(points,4),[],colors(i,:),'filled','markerfacealpha',0.1)
     xlabel('PC1');
     ylabel('PC4');
     hold on
     subplot(2,2,4)
-    scatter(pca_space(points,1), pca_space(points,5),[],colors(i,:),'filled','markerfacealpha',0.1)
+    scatter(score(points,1), score(points,5),[],colors(i,:),'filled','markerfacealpha',0.1)
     xlabel('PC1');
     ylabel('PC5');
     hold on
