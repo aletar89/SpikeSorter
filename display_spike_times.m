@@ -1,4 +1,7 @@
-function display_spike_times(data,spike_times, clusters, half_width)
+function display_spike_times(data,spike_times, clusters, half_width, dy)
+if nargin < 5
+    dy = 2000;
+end
 if nargin < 4
     half_width = 16;
 end
@@ -10,10 +13,8 @@ spike_times(on_edge) = [];
 clusters(on_edge) = [];
 
 N = size(data,2);
-dy = 2000;
 max_y = (size(data,1)-1) * dy;
 disp_mat = repmat(0:-dy:-max_y,N,1);
-figure
 plot(data'+disp_mat,'color',[0.8,0.8,0.8])
 hold on
 
