@@ -10,30 +10,42 @@ spike_forms = spike_forms(:,2:end)';
 
 [a,d] = haart(spike_forms,4);
 h = [a; d{1}; d{2}; d{3}; d{4}];
-SF = zeros(1, size(h,1));
-for i=1:length(SF)
-    m = mean(h(i,:));
-    s = std(h(i,:))^2;
-    hist_obj = histogram(h(i,:),100,'normalization','pdf');
-    x = (hist_obj.BinEdges(1:end-1) + hist_obj.BinEdges(2:end))/2;
-    g = pdf(gmdistribution(m,s),x')';
-    hold on
-    plot(x,g)
-    v = hist_obj.Values;
-    SF(i) = sum(abs(v-g));
-    title(i)
-    clf
-end
 
-
-p = randperm(length(spike_times),1000);
-candidates = [2,9,10,11,12,22,23,28,29,31,32];
-N = length(candidates);
-for i = 1:N
-    for j = 1:N
-        subplot(N,N,sub2ind([N,N],i,j))
-        cand_i = candidates(i);
-        cand_j = candidates(j);
-        scatter(h(cand_i,p),h(cand_i,p),'fill','markerfacealpha',0.1)
+unique_clusters = unique(D.true_clusters);
+clster_mean = zeros(size(h,1), length(unique_clusters));
+clster_std = zeros(size(h,1), length(unique_clusters));
+for i = 1:size(h,1)
+    for j = 1:length(unique_clusters)
+        clster_mean(i,j) = mean(h(i,D.true_clusters==unique_clusters(j)));
+        clster_std(i,j) = std(h(i,D.true_clusters==unique_clusters(j)));
     end
 end
+
+h_grade = zeros(1,32);
+for i=1:size(h,1)
+    for j = 1:length(unique_clusters)-2
+        for k = 2:length(unique_clusters)
+            dist = abs(clster_mean(i,j) - clster_mean(i,k));
+            var = clster_std(i,j) + clster_std(i,k);
+            ratio = dist/var;
+            h_grade(i) = h_grade(i) + ratio;
+        end
+    end
+end
+
+[B,I] = sort(h_grade,'descend');
+
+best_I = [2, 10, 23, 29, 32];
+wavelets = zeros(size(h,1), length(best_I));
+for i = 1:length(best_I)
+    ih = zeros(size(h,1),1);
+    ih(best_I(i)) = 1;
+    ia = ih(1:2);
+    id = {ih(3:3+16-1), ih(3+16:3+16+8-1), ih(3+16+8:3+16+8+4-1), ih(3+16+8+4:3+16+8+4+2-1)};
+    wavelets(:,i) = ihaart(ia,id);
+    stem(wavelets(:,i))
+    title(best_I(i));
+end
+
+save('haar_wavelets.mat', 'wavelets')
+
