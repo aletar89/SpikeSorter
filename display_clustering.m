@@ -37,7 +37,14 @@ end
 if isempty(features)
     [coeff,score,~,~,~,mu] = pca(chained_spikes);
 else
-    [coeff,score,~,~,~,mu] = pca(features');
+    if size(features,1)>5
+        [coeff,score,~,~,~,mu] = pca(features');
+    else
+        score = features';
+        while size(score,2)<5
+            score = [score, score(:,end)];
+        end
+    end
 end
 
 %% PCA scatters
