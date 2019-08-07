@@ -73,6 +73,9 @@ scatter(pc1, pc2,all_inds)
 %% Dispaly clustering of the ground truth
 display_clustering(S.clean_data, S.true_spike_times,[], S.true_clusters,16);
 
+%% Dispaly clustering of the ground truth with calculated features
+display_clustering(S.clean_data, S.true_spike_times,S.features, S.true_clusters,16);
+
 %% Display clustering result without features
 display_clustering(S.clean_data, S.test_spike_times,[], S.test_clusters,16);
 
@@ -88,3 +91,7 @@ end
 dists = dists(:);
 dists(isnan(dists))=[];
 hist(dists,100)
+
+%% Normalize feature variance
+s = std(S.features,[],2);
+S.features = S.features./ repmat(s,1, size(S.features,2));

@@ -34,8 +34,10 @@ tic
 %feature_extraction_handle = @(clean_data,spike_times) spike_energy(clean_data,spike_times, 16);
 %feature_extraction_handle = @(clean_data,spike_times) FSDE(clean_data,spike_times, 16);
 %feature_extraction_handle = @(clean_data,spike_times) libPCA(clean_data,spike_times,10, 16);
-feature_extraction_handle = @(clean_data,spike_times) libPCA_pos(clean_data,spike_times,10, 16);
+%feature_extraction_handle = @(clean_data,spike_times) libPCA_pos(clean_data,spike_times,3, 16);
+%feature_extraction_handle = @(clean_data,spike_times) libPCA_all(clean_data,spike_times,3, 16);
 %feature_extraction_handle = @(clean_data,spike_times) haar_features(clean_data,spike_times);
+feature_extraction_handle = @(clean_data,spike_times) haar_all(clean_data,spike_times);
 S.extract_features(feature_extraction_handle);
 disp(sprintf("Finished extracting features. Elapsed %.1f sec.", toc))
 
