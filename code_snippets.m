@@ -95,3 +95,33 @@ hist(dists,100)
 %% Normalize feature variance
 s = std(S.features,[],2);
 S.features = S.features./ repmat(s,1, size(S.features,2));
+
+%% Show NEO value
+zero_column = zeros(size(data,1),1);
+NEO_of_data = [zero_column data(:,2:end-1).^2 - data(:,1:end-2).*data(:,3:end) zero_column];
+max_neo = zeros(size(spike_times));
+max_abs = zeros(size(spike_times));
+for i = 1:length(spike_times)
+    NEO_of_spikes = NEO_of_data(:,spike_times(i)-half_width:spike_times(i)+half_width);
+    all_channels = data(:,spike_times(i)-16:spike_times(i)+16);
+    [channel_max, max_sample] = max(abs(all_channels),[],2);
+    [~, channel_of_max] = max(channel_max);
+    max_abs(i) = max_sample(channel_of_max);
+    [channel_max, max_sample] = max(abs(NEO_of_spikes),[],2);
+    [~, channel_of_max] = max(channel_max);
+    max_neo(i) = max_sample(channel_of_max);
+end
+edges = 11.5:20.5;
+h = histogram(max_neo,edges);
+neo_hist = h.Values;
+h = histogram(max_abs,edges);
+abs_hist = h.Values;
+bar((12:20)-16,[abs_hist', neo_hist'])
+legend('max abs','max neo');
+title('histogram of sample number')
+
+
+
+    
+    
+    
