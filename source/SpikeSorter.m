@@ -41,9 +41,11 @@ classdef SpikeSorter < handle
             obj.features = obj.feature_extraction_function(obj.clean_data, obj.test_spike_times);
         end
         function rating = cluster_and_rate(obj, clustering_handle, margin)
+            tic
             obj.clustering_function = clustering_handle;
             obj.test_clusters = obj.clustering_function(obj.features);
             rating = obj.rate_clustering(obj.test_spike_times, obj.test_clusters, obj.true_spike_times, obj.true_clusters, margin);
+            disp(sprintf("Clustering rating is %.1f%%. Elapsed %.1f sec.", [rating*100, toc]))
         end
         
         %Internal functions
