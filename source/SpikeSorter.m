@@ -44,12 +44,12 @@ classdef SpikeSorter < handle
             tic
             obj.detection_function = detection_handle;
             obj.spike_times.test = obj.detection_function(obj.clean_data);
-            rating_b = 100 * obj.rate_detection(obj.spike_times.test, obj.spike_times.b, margin);
-            rating_c = 100 * obj.rate_detection(obj.spike_times.test, obj.spike_times.c, margin);
-            rating_d = 100 * obj.rate_detection(obj.spike_times.test, obj.spike_times.d, margin);
+            rating_b = obj.rate_detection(obj.spike_times.test, obj.spike_times.b, margin);
+            rating_c = obj.rate_detection(obj.spike_times.test, obj.spike_times.c, margin);
+            rating_d = obj.rate_detection(obj.spike_times.test, obj.spike_times.d, margin);
             obj.detection_rating = struct('b',rating_b, 'c', rating_c, 'd', rating_d);
             disp(sprintf("Detection rating is [b: %.1f%%, c:%.1f%%, d:%.1f%%]. Elapsed %.1f sec.",...
-                [rating_b, rating_c, rating_d, toc]))
+                [rating_b.F1*100, rating_c.F1*100, rating_d.F1*100, toc]))
         end
         function extract_features(obj, feature_extraction_handle)
             tic
@@ -64,12 +64,13 @@ classdef SpikeSorter < handle
             tic
             obj.clustering_function = clustering_handle;
             obj.clusters.test = obj.clustering_function(obj.features);
-            rating_b = 100 * obj.rate_clustering(obj.spike_times.test, obj.clusters.test, obj.spike_times.b, obj.clusters.b, margin);
-            rating_c = 100 * obj.rate_clustering(obj.spike_times.test, obj.clusters.test, obj.spike_times.c, obj.clusters.c, margin);
-            rating_d = 100 * obj.rate_clustering(obj.spike_times.test, obj.clusters.test, obj.spike_times.d, obj.clusters.d, margin);
-            obj.clustering_rating = struct('b',rating_b, 'c', rating_c, 'd', rating_d);
+            result_b = obj.rate_clustering(obj.spike_times.test, obj.clusters.test, obj.spike_times.b, obj.clusters.b, margin);
+            result_c = obj.rate_clustering(obj.spike_times.test, obj.clusters.test, obj.spike_times.c, obj.clusters.c, margin);
+            result_d =  obj.rate_clustering(obj.spike_times.test, obj.clusters.test, obj.spike_times.d, obj.clusters.d, margin);
+            obj.clustering_rating = struct('b',result_b, 'c', result_c, 'd', result_d);
+            
             disp(sprintf("Clustering rating is [b: %.1f%%, c:%.1f%%, d:%.1f%%]. Elapsed %.1f sec.",...
-                [rating_b, rating_c, rating_d, toc]))
+                [result_b.rating*100, result_c.rating*100, result_d.rating*100, toc]))
         end
         
         %Internal functions
@@ -84,27 +85,29 @@ classdef SpikeSorter < handle
                 det_times(ib) =  det_times(ib) | untouched;
             end
         end
-        function [rating, TP, FP, FN] = rate_detection(obj, detected_times, ground_truth_times, margin)
+        function [rating] = rate_detection(obj, detected_times, ground_truth_times, margin)
             [gt_times, det_times] = obj.mutual_times(detected_times, ground_truth_times, margin);
             TP = sum(det_times);
             FP = sum(~det_times);
             FN = sum(~gt_times);
-            rating = 2*TP/(2*TP + FP + FN);  %F1 score
+            F1 = 2*TP/(2*TP + FP + FN);
+            rating = struct('TP', TP, 'FP', FP, 'FN', FN, 'F1', F1);
         end
-        function [rating, confusion] = rate_clustering(obj, detected_times, calculated_clusters, ground_truth_times, ground_truth_clusters, margin)
+        function result = rate_clustering(obj, detected_times, calculated_clusters, ground_truth_times, ground_truth_clusters, margin)
             [gt_times, det_times] = obj.mutual_times(detected_times, ground_truth_times, margin);
             [~,~, mutual_calculated_clusters] = unique(calculated_clusters(det_times));
             [~,~, mutual_ground_truth_clusters] = unique(ground_truth_clusters(gt_times));
             rating = RandIndex(mutual_calculated_clusters, mutual_ground_truth_clusters);
-            confusion = obj.clusterconfusion(calculated_clusters(det_times), ground_truth_clusters(gt_times));
+            confusion = obj.clusterconfusion(ground_truth_clusters(gt_times), calculated_clusters(det_times));
+            result = struct('rating', rating, 'confusion', confusion);
         end
-        function C = clusterconfusion(obj,clusters1, clusters2)
-            uc1 = unique(clusters1);
-            uc2 = unique(clusters2);
-            C = zeros(length(uc1),length(uc2));
-            for i = 1:length(uc1)
-                for j = 1:length(uc2)
-                    C(i,j) = sum(clusters1 == uc1(i) & clusters2 == uc2(j));
+        function C = clusterconfusion(obj,true_clusters, test_clusters )
+            unique_true = unique(true_clusters);
+            unique_test = unique(test_clusters);
+            C = zeros(length(unique_true),length(unique_test));
+            for i = 1:length(unique_true)
+                for j = 1:length(unique_test)
+                    C(i,j) = sum(true_clusters == unique_true(i) & test_clusters == unique_test(j));
                 end
             end
         end
