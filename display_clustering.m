@@ -9,14 +9,16 @@ clusters(on_edge) = [];
 if ~isempty(features)
     features(:,on_edge) = [];
 end
-
-colors = [1,0,0;
-    0,1,0;
-    0,0,1;
-    0.5,0.5,0;
-    0.5,0,0.5;
-    0,0.5,0.5];
 cluster_ids = unique(clusters);
+
+hues = linspace(0,1,length(cluster_ids)+1);
+hues = hues(2:end);
+hsv_colors = zeros(1,length(hues),3);
+hsv_colors(:,:,1) = hues;
+hsv_colors(:,:,2) = ones(size(hues));
+hsv_colors(:,:,3) = ones(size(hues));
+colors = squeeze(hsv2rgb(hsv_colors));
+
 while length(cluster_ids)>6
     spikes_per_cluster = sum(clusters == cluster_ids');
     [~,count_sort] = sort(spikes_per_cluster);
