@@ -42,7 +42,9 @@ clustering_handle = @(features) kmeans(features',5, 'Replicates',5, 'MaxIter',10
 % max_clusters = 30;
 % clustering_handle = @(features) OSort(features, merge_thresh, history, max_clusters);
 S.cluster_and_rate(clustering_handle);
-
 display_clustering(S.clean_data, S.spike_times.test, S.features, S.clusters.test,16);
+display_confusion(S.clustering_rating.b.confusion)
+display_clustering(S.clean_data, S.spike_times.c,feature_extraction_handle(S.clean_data, S.spike_times.c), S.clusters.c,16);
+
 
 disp(sprintf("Total time: %.1f seconds", toc(total_timer)))
