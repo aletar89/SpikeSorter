@@ -16,20 +16,9 @@ hues = hues(2:end);
 hsv_colors = zeros(1,length(hues),3);
 hsv_colors(:,:,1) = hues;
 hsv_colors(:,:,2) = ones(size(hues));
-hsv_colors(:,:,3) = ones(size(hues));
+hsv_colors(:,:,3) = 0.9*ones(size(hues));
 colors = squeeze(hsv2rgb(hsv_colors));
 
-while length(cluster_ids)>6
-    spikes_per_cluster = sum(clusters == cluster_ids');
-    [~,count_sort] = sort(spikes_per_cluster);
-    least_spikes = cluster_ids(count_sort(1));
-    spike_times(clusters==least_spikes) = [];
-    if ~isempty(features)
-        features(:,clusters==least_spikes) = [];
-    end
-    clusters(clusters==least_spikes) = [];
-    cluster_ids = unique(clusters);
-end
 chained_spikes = zeros(length(spike_times), size(data,1)*(half_width*2+1));
 for i=1:length(spike_times)
     all_channels = data(:,spike_times(i)-half_width:spike_times(i)+half_width)';
