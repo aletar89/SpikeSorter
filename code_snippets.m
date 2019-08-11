@@ -120,8 +120,25 @@ bar((12:20)-16,[abs_hist', neo_hist'])
 legend('max abs','max neo');
 title('histogram of sample number')
 
+%% Estimate threshold for OSort
+c_features = feature_extraction_handle(S.clean_data, S.spike_times.c);
+c_unique = unique(S.clusters.c);
+cluster_mean = zeros(size(c_features,1),length(c_unique));
+cluster_std = zeros(size(c_features,1),length(c_unique));
 
+for i = 1:length(c_unique)
+    cluster_mean(:,i) = mean(c_features(:,S.clusters.c == c_unique(i)),2);
+    cluster_std(:,i) = std(c_features(:,S.clusters.c == c_unique(i)),[],2);
+end
+    
+dists = zeros(length(c_unique)-1);
 
-    
-    
-    
+for i = 1:length(c_unique)-1
+   for j = i+1:length(c_unique)
+       dists(i,j-1) = mean(abs(cluster_mean(:,i) - cluster_mean(:,j)));
+   end
+end
+d = dists(:);
+d(d==0) = [];
+
+s = sqrt(sum(cluster_std.^2))
