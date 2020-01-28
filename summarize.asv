@@ -1,0 +1,19 @@
+function [MTable] = summarize(RTable)
+algorithms = unique(RTable.algorithm);
+var_names = RTable.Properties.VariableNames;
+var_names(strcmp(var_names,'data_name')) = [];
+var_names(strcmp(var_names,'shank')) = [];
+var_names(strcmp(var_names,'algorithm')) = [];
+var_names(strcmp(var_names,'stability')) = [];
+MTable = table();
+for a = 1:length(algorithms)
+            MTable.algorithm(2*a-1) = algorithms(a);
+        MTable.stability(2*a-1) = "stable";
+        relevant = strcmp(RTable.algorithm,algorithms(a)) & strcmp(RTable.stability,'stable');
+    for v = 1:length(var_names)
+        MTable.([var_names(v) '_mean']) = mean(RTable.(var_names(v))(relevant));
+        
+    end
+end
+end
+
